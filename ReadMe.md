@@ -44,6 +44,7 @@ Run each step individually to understand the full Terraform workflow:
 make init      # Initialize backend and download providers
 make fmt       # Format Terraform code
 make validate  # Validate configuration syntax
+make tfsec     # Security checks 
 make plan      # Preview planned infrastructure changes
 make apply     # Deploy resources (5–10 minutes)
 make curl      # Test the API endpoint
