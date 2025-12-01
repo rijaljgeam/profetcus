@@ -1,0 +1,52 @@
+############################################
+# sas_only.tf — generate SAS (no creations)
+############################################
+
+# 1) Reference EXISTING storage account
+data "azurerm_storage_account" "tfstate" {
+  name                = "tfstatenignb9em"
+  resource_group_name = "tfstate-rg"
+}
+
+# 2) Generate 1-year SAS (Blob service only)
+data "azurerm_storage_account_sas" "tfstate_sas" {
+  connection_string = data.azurerm_storage_account.tfstate.primary_connection_string
+
+  https_only = true
+  start      = timestamp()
+  expiry     = timeadd(timestamp(), "8760h") # 365*24 hours
+
+  resource_types {
+    service   = true
+    container = true
+    object    = true
+  }
+
+  services {
+    blob  = true
+    queue = false
+    table = false
+    file  = false
+  }
+
+  # Keep only what the backend needs;
+  permissions {
+    read    = true
+    write   = true
+    delete  = true
+    list    = true
+    add     = true
+    create  = true
+    update  = true
+    tag     = false
+    process = false
+    filter  = false
+  }
+}
+
+# 3) Outputs
+output "sas_token" {
+  description = "Account SAS (Blob-only) valid for 1 year; includes leading ?"
+  value       = data.azurerm_storage_account_sas.tfstate_sas.sas
+  sensitive   = true
+}
